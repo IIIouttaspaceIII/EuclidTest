@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState, type FormEvent } from "react";
+import { downloadJson } from "@/lib/download-json";
 import type { QualityDef, Question } from "@/lib/quiz/types";
 
 type GameplayData = { qualities: QualityDef[]; questions: Question[] };
@@ -41,16 +42,7 @@ export function GameplayEditor({ initialData }: { initialData: GameplayData }) {
     }
 
     setError("");
-    const url = URL.createObjectURL(
-      new Blob([`${JSON.stringify(data, null, 2)}\n`], {
-        type: "application/json",
-      }),
-    );
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = "lol-gameplay.json";
-    link.click();
-    URL.revokeObjectURL(url);
+    downloadJson("lol-gameplay.json", data);
   }
 
   const inputClass =

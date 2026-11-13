@@ -24,6 +24,21 @@ downloaded file to apply the changes. The editor does not save to the repository
 automatically. Quality IDs and their order must remain unchanged because
 champion trait scores depend on them. The editor is unavailable in production.
 
+Champion gameplay traits are loaded from `src/quizzes/lol-gameplay-traits.json`.
+Each champion name maps to 20 scores in the quality order defined in
+`src/quizzes/lol-gameplay.json`, with each score between -1 and 1.
+In development, finish the gameplay quiz and expand a champion under
+**All matches, closest first**. Drag the amber points (or use the arrow keys)
+to edit that champion's scores; the indigo points remain your quiz answers.
+Scores update immediately; rows reorder when you release a drag. Click **Save JSON** and replace
+`src/quizzes/lol-gameplay-traits.json` with the downloaded file to persist edits.
+The export contains every champion, including unchanged profiles. Edits are
+otherwise local to the results screen and are discarded on retake or navigation.
+Trait editing and export are not available in production or in the lore quiz.
+In development, expanded match qualities also show the exact text of every
+question that affects them, in both quizzes. These question hints are hidden
+in production.
+
 You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.

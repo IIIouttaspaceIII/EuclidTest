@@ -180,13 +180,9 @@ export function includeChampionRoster(
 
   return [
     ...characters,
-    ...championNames
-      .filter((name) => !included.has(normalizeId(name)))
-      .map((name) => {
-        const values = profiles[name];
-        if (!values) {
-          throw new Error(`Missing quiz trait profile for ${name}`);
-        }
+    ...Object.entries(profiles)
+      .filter(([name]) => !included.has(normalizeId(name)))
+      .map(([name, values]) => {
         if (values.length !== qualities.length) {
           throw new Error(
             `${name}: expected ${qualities.length} trait values, received ${values.length}`,

@@ -3,7 +3,7 @@
     { "id": "aggression", "name": "Aggression", "low": "Passive", "high": "Aggressive" },
     { "id": "patience", "name": "Patience", "low": "Impatient", "high": "Patient" },
     { "id": "mobility", "name": "Mobility", "low": "Planted", "high": "Mobile" },
-    { "id": "anchoring", "name": "Positioning", "low": "Roaming", "high": "Holding ground" },
+    { "id": "anchoring", "name": "Positioning", "low": "Kiting", "high": "Stat Checking" },
     { "id": "teamplay", "name": "Teamplay", "low": "Self-focused", "high": "Team-focused" },
     { "id": "solo-carry", "name": "Carry focus", "low": "Team-reliant", "high": "Self-reliant" },
     { "id": "risk", "name": "Risk-taking", "low": "Safe", "high": "Risky" },

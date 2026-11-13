@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { Slider } from "@/components/Slider";
+import { downloadJson } from "@/lib/download-json";
 import { computeQualityScores, rankCharacters } from "@/lib/quiz/scoring";
 import type { Answers, Quiz } from "@/lib/quiz/types";
 
@@ -88,7 +89,23 @@ function Results({
   answers: Answers;
   onRetake: () => void;
 }) {
-  const ranking = useMemo(() => rankCharacters(quiz, answers), [quiz, answers]);
+  const canEdit =
+    process.env.NODE_ENV === "development" && quiz.id === "lol-gameplay";
+  const [characters, setCharacters] = useState(quiz.characters);
+  const ranking = useMemo(
+    () => rankCharacters({ ...quiz, characters }, answers),
+    [quiz, characters, answers],
+  );
+  const [initialRankingOrder] = useState(() =>
+    ranking.map(({ character }) => character.id),
+  );
+  const displayedRanking = canEdit
+    ? [...ranking].sort(
+        (a, b) =>
+          initialRankingOrder.indexOf(a.character.id) -
+          initialRankingOrder.indexOf(b.character.id),
+      )
+    : ranking;
   const scores = useMemo(
     () => computeQualityScores(quiz, answers),
     [quiz, answers],
@@ -109,8 +126,37 @@ function Results({
       </div>
 
       <h3 className="mb-3 text-lg font-semibold">All matches, closest first</h3>
+      {canEdit && (
+        <div className="mb-4 space-y-3">
+          <p className="text-sm text-zinc-500">
+            Expand a champion and drag the amber points to edit their gameplay
+            traits. Match scores update immediately, but the champion list keeps
+            its original order while editing. Save JSON, then replace{" "}
+            <code>src/quizzes/lol-gameplay-traits.json</code> with the download
+            to keep your changes. Unsaved edits are lost when you leave or retake.
+          </p>
+          <button
+            onClick={() =>
+              downloadJson(
+                "lol-gameplay-traits.json",
+                Object.fromEntries(
+                  [...characters]
+                    .sort((a, b) => a.name.localeCompare(b.name))
+                    .map((character) => [
+                      character.name,
+                      quiz.qualities.map((quality) => character.traits[quality.id]),
+                    ]),
+                ),
+              )
+            }
+            className="rounded-lg bg-indigo-600 px-5 py-2 font-medium text-white hover:bg-indigo-500"
+          >
+            Save JSON
+          </button>
+        </div>
+      )}
       <ol className="space-y-2">
-        {ranking.map((m, i) => (
+        {displayedRanking.map((m, i) => (
           <li
             key={m.character.id}
             className="rounded-lg border border-zinc-200 dark:border-zinc-800"
@@ -142,10 +188,35 @@ function Results({
                   <Compare
                     key={q.id}
                     name={q.name}
+                    questions={
+                      process.env.NODE_ENV === "development"
+                        ? quiz.questions.filter((question) =>
+                            question.effects.some(
+                              (effect) => effect.quality === q.id && effect.weight !== 0,
+                            ),
+                          )
+                        : undefined
+                    }
                     low={q.low}
                     high={q.high}
                     you={scores[q.id]}
                     them={m.character.traits[q.id] ?? 0}
+                    editLabel={`${m.character.name}: ${q.name}`}
+                    onChange={
+                      canEdit
+                        ? (value) =>
+                            setCharacters((current) =>
+                              current.map((character) =>
+                                character.id === m.character.id
+                                  ? {
+                                      ...character,
+                                      traits: { ...character.traits, [q.id]: value },
+                                    }
+                                  : character,
+                              ),
+                            )
+                        : undefined
+                    }
                   />
                 ))}
               </div>
@@ -174,26 +245,59 @@ function Results({
 
 function Compare(props: {
   name: string;
+  questions?: Quiz["questions"];
   low: string;
   high: string;
   you: number;
   them: number;
+  editLabel: string;
+  onChange?: (value: number) => void;
 }) {
   const pos = (v: number) => `${((v + 1) / 2) * 100}%`;
   return (
     <div>
-      <div className="mb-1 text-xs font-medium">{props.name}</div>
-      <div className="relative h-2 rounded-full bg-zinc-200 dark:bg-zinc-800">
+      <div className="mb-1 flex justify-between text-xs font-medium">
+        <div className="flex-1">
+          <span>{props.name}</span>
+          {props.questions && props.questions.length > 0 && (
+            <ul className="mb-2 mt-1 space-y-1 pr-3 font-normal text-zinc-500">
+              {props.questions.map((question) => (
+                <li key={question.id}>{question.text}</li>
+              ))}
+            </ul>
+          )}
+        </div>
+        {props.onChange && (
+          <span className="tabular-nums text-amber-600">{props.them.toFixed(2)}</span>
+        )}
+      </div>
+      <div className="relative h-2 rounded-full bg-zinc-200 focus-within:ring-2 focus-within:ring-amber-500 dark:bg-zinc-800">
         <span
           title="You"
           className="absolute top-1/2 h-4 w-4 -translate-x-1/2 -translate-y-1/2 rounded-full bg-indigo-500"
           style={{ left: pos(props.you) }}
         />
-        <span
-          title="Character"
-          className="absolute top-1/2 h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full bg-amber-400 ring-2 ring-white dark:ring-zinc-900"
-          style={{ left: pos(props.them) }}
-        />
+        {props.onChange ? (
+          <input
+            type="range"
+            aria-label={props.editLabel}
+            min={-1}
+            max={1}
+            step={0.01}
+            value={props.them}
+            onChange={(event) => props.onChange?.(Number(event.target.value))}
+            onPointerDown={(event) => {
+              event.currentTarget.setPointerCapture(event.pointerId);
+            }}
+            className="absolute -left-1.5 top-1/2 h-6 w-[calc(100%+12px)] -translate-y-1/2 cursor-ew-resize appearance-none bg-transparent outline-none [&::-moz-range-thumb]:h-3 [&::-moz-range-thumb]:w-3 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:border-0 [&::-moz-range-thumb]:bg-amber-400 [&::-moz-range-thumb]:ring-2 [&::-moz-range-thumb]:ring-white [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-amber-400 [&::-webkit-slider-thumb]:ring-2 [&::-webkit-slider-thumb]:ring-white dark:[&::-moz-range-thumb]:ring-zinc-900 dark:[&::-webkit-slider-thumb]:ring-zinc-900"
+          />
+        ) : (
+          <span
+            title="Character"
+            className="absolute top-1/2 h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full bg-amber-400 ring-2 ring-white dark:ring-zinc-900"
+            style={{ left: pos(props.them) }}
+          />
+        )}
       </div>
       <div className="mt-1 flex justify-between text-[10px] text-zinc-500">
         <span>{props.low}</span>
