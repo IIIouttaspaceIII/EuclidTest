@@ -24,6 +24,11 @@ export default function Home() {
           </Link>
         ))}
       </div>
+      {process.env.NODE_ENV === "development" && (
+        <Link href="/edit/gameplay" className="mt-8 text-sm text-indigo-500 hover:underline">
+          Edit gameplay qualities (development)
+        </Link>
+      )}
       <p className="mt-16 max-w-xl text-center text-xs text-zinc-400">
         Fan-made and unofficial. League of Legends and its characters are
         property of Riot Games.

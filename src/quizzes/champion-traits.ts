@@ -1,5 +1,7 @@
-/** Direct per-champion scores in gameplay-quality order; no archetype fallback. */
-export const gameplayChampionTraits: Record<string, readonly number[]> = {
+import { expandGameplayTraitScores } from "./helpers";
+
+/** Base scores for the original gameplay traits, expanded below for each question. */
+const gameplayBaseTraits: Record<string, readonly number[]> = {
   'Aatrox': [0.4, 0, 0.4, 0.9, 0, -0.1, 0.6, -0.5, 1, -0.7],
   'Akali': [0.9, 0.4, -0.6, 1, 0.8, -0.4, 0.7, -0.6, -1, 0.6],
   'Akshan': [0.6, 0.4, -0.8, 0.9, 0.8, -0.5, 0.4, 0.1, -1, 1],
@@ -141,6 +143,14 @@ export const gameplayChampionTraits: Record<string, readonly number[]> = {
   'Zoe': [0.3, 0.1, 0.6, 0, 1, 1, 1, 0.5, -0.3, 0.3],
   'Zyra': [-0.1, -0.2, 0, -0.2, 0.2, 1, 0.8, 0.4, -0.2, 0.5],
 };
+
+export const gameplayChampionTraits: Record<string, readonly number[]> =
+  Object.fromEntries(
+    Object.entries(gameplayBaseTraits).map(([name, values]) => [
+      name,
+      expandGameplayTraitScores(values),
+    ]),
+  );
 
 /** Direct per-champion scores in lore-quality order; no archetype fallback. */
 export const loreChampionTraits: Record<string, readonly number[]> = {

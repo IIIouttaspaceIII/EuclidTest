@@ -1,46 +1,18 @@
-import type { Question, Quiz, QualityDef } from "@/lib/quiz/types";
-import { character } from "./helpers";
+import type { Quiz } from "@/lib/quiz/types";
+import { character, expandGameplayTraitScores } from "./helpers";
 import { includeChampionRoster } from "./champion-roster";
 import { gameplayChampionTraits } from "./champion-traits";
+import gameplayData from "./lol-gameplay.json";
 
-const qualities: QualityDef[] = [
-  { id: "aggression", name: "Aggression", low: "Passive", high: "Aggressive" },
-  { id: "mobility", name: "Mobility", low: "Planted", high: "Mobile" },
-  { id: "teamplay", name: "Teamplay", low: "Self-focused", high: "Team-focused" },
-  { id: "risk", name: "Risk-taking", low: "Safe", high: "Risky" },
-  { id: "mechanics", name: "Mechanical skill", low: "Simple", high: "Demanding" },
-  { id: "range", name: "Range", low: "Melee", high: "Ranged" },
-  { id: "burst", name: "Burst", low: "Sustained", high: "Burst" },
-  { id: "macro", name: "Macro", low: "Skirmish-focused", high: "Macro-focused" },
-  { id: "tank", name: "Durability", low: "Squishy", high: "Durable" },
-  { id: "trick", name: "Trickery", low: "Straightforward", high: "Tricky" },
-];
+const { qualities, questions } = gameplayData;
 
-const questions: Question[] = [
-  { id: "g1", text: "I like to start fights rather than wait for them.", effects: [{ quality: "aggression", weight: 1 }] },
-  { id: "g2", text: "I prefer to farm safely and wait for the enemy to make mistakes.", effects: [{ quality: "aggression", weight: -1 }, { quality: "risk", weight: -0.5 }] },
-  { id: "g3", text: "Dashing around the battlefield is the most fun part of the game.", effects: [{ quality: "mobility", weight: 1 }] },
-  { id: "g4", text: "I'd rather stand my ground than chase or run away.", effects: [{ quality: "mobility", weight: -1 }] },
-  { id: "g5", text: "I'm happiest when I'm making my teammates stronger.", effects: [{ quality: "teamplay", weight: 1 }] },
-  { id: "g6", text: "I want to carry games on my own.", effects: [{ quality: "teamplay", weight: -1 }, { quality: "aggression", weight: 0.3 }] },
-  { id: "g7", text: "A risky all-in play is worth it for a big payoff.", effects: [{ quality: "risk", weight: 1 }] },
-  { id: "g8", text: "I want a champion I can learn in a few games.", effects: [{ quality: "mechanics", weight: -1 }] },
-  { id: "g9", text: "I love high-skill champions with a demanding skill ceiling.", effects: [{ quality: "mechanics", weight: 1 }] },
-  { id: "g10", text: "I want to deal damage from a safe distance.", effects: [{ quality: "range", weight: 1 }, { quality: "tank", weight: -0.3 }] },
-  { id: "g11", text: "I want to be right in the middle of the action.", effects: [{ quality: "range", weight: -1 }] },
-  { id: "g12", text: "Deleting an enemy in a split second is the best feeling.", effects: [{ quality: "burst", weight: 1 }] },
-  { id: "g13", text: "I prefer steady damage or healing over a long fight to quick bursts.", effects: [{ quality: "burst", weight: -1 }] },
-  { id: "g14", text: "I'm always looking at the minimap and thinking about objectives.", effects: [{ quality: "macro", weight: 1 }] },
-  { id: "g15", text: "I'd rather win by outplaying someone in a duel than by taking towers.", effects: [{ quality: "macro", weight: -1 }, { quality: "mechanics", weight: 0.3 }] },
-  { id: "g16", text: "I like absorbing damage so my team doesn't have to.", effects: [{ quality: "tank", weight: 1 }, { quality: "teamplay", weight: 0.3 }] },
-  { id: "g17", text: "I'd rather be a glass cannon with huge damage than have lots of health.", effects: [{ quality: "tank", weight: -1 }] },
-  { id: "g18", text: "I enjoy traps, ambushes and mind games.", effects: [{ quality: "trick", weight: 1 }] },
-  { id: "g19", text: "I'd rather play on my own terms, even when the team wants something else.", effects: [{ quality: "teamplay", weight: -1 }] },
-  { id: "g20", text: "When I'm ahead, I like to snowball and end the game fast.", effects: [{ quality: "aggression", weight: 1 }, { quality: "macro", weight: 0.5 }] },
-];
-
-const c = (...args: [string, string, string, string, number[]]) =>
-  character(qualities, ...args);
+const c = (
+  id: string,
+  name: string,
+  title: string,
+  blurb: string,
+  values: number[],
+) => character(qualities, id, name, title, blurb, expandGameplayTraitScores(values));
 
 export const gameplayQuiz: Quiz = {
   id: "lol-gameplay",

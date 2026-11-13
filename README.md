@@ -16,6 +16,14 @@ bun dev
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
+### Gameplay quiz editor
+
+In development, open `/edit/gameplay` to edit the gameplay questions and quality
+labels. Export the JSON and replace `src/quizzes/lol-gameplay.json` with the
+downloaded file to apply the changes. The editor does not save to the repository
+automatically. Quality IDs and their order must remain unchanged because
+champion trait scores depend on them. The editor is unavailable in production.
+
 You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
